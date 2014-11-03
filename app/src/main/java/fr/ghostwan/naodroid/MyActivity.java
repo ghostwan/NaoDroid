@@ -71,6 +71,7 @@ public class MyActivity extends Activity implements ALInterface {
 		context = this;
 		ipText = (EditText) findViewById(R.id.robotip_edit);
 		connectButton = (Button) findViewById(R.id.connect_button);
+		connectButton.setText(getString(R.string.connect));
 		logText = (TextView) findViewById(R.id.log_text);
 		logText.setMovementMethod(new ScrollingMovementMethod());
 		ALModule.alInterface = this;
@@ -94,7 +95,7 @@ public class MyActivity extends Activity implements ALInterface {
 
 					if (action.equals(ACTION_RUN_BEHAVIOR)) {
 						String name = intent.getExtras().getString("name");
-						alSpeech.say("je lance le behavior " + name);
+						alSpeech.say(getString(R.string.launching_behavior_say) + name);
 
 						String lastBehavior = behaviors.get(name);
 						if (state.equals("disabled")) {
@@ -103,16 +104,6 @@ public class MyActivity extends Activity implements ALInterface {
 						else {
 							alAutonomousLife.switchFocus(lastBehavior + "/.");
 						}
-						requestCode++;
-						NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context)
-								.setSmallIcon(R.drawable.nao)
-								.setContentTitle("NaoDroid")
-								.setContentText(name + "running")
-								.setDeleteIntent(PendingIntent.getBroadcast(context, requestCode,
-										new Intent(ACTION_DISMISS_NOTIFICATION), PendingIntent.FLAG_CANCEL_CURRENT));
-
-
-						notificationManager.notify(002, notificationBuilder.build());
 					}
 					else if (action.equals(ACTION_DISMISS_NOTIFICATION)) {
 						onDisconnected();
@@ -203,10 +194,11 @@ public class MyActivity extends Activity implements ALInterface {
 						}
 						writeLog("Ip address : " + ipAddress);
 						session.connect("tcp://" + ipAddress + ":9559").sync(500, TimeUnit.MILLISECONDS);
+						writeLog("session connected");
 						if (session.isConnected())
 							connectServices();
 						else
-							Toast.makeText(context, "Cannot connect to " + ipAddress, Toast.LENGTH_SHORT).show();
+							Toast.makeText(context, getString(R.string.cannot_connect_text) + ipAddress, Toast.LENGTH_SHORT).show();
 					}
 					catch (Exception e) {
 						e.printStackTrace();
@@ -219,7 +211,7 @@ public class MyActivity extends Activity implements ALInterface {
 					runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							Toast.makeText(context, "Please enter a robot ipText or a robot name", Toast.LENGTH_SHORT).show();
+							Toast.makeText(context, getString(R.string.enter_robot_ip), Toast.LENGTH_SHORT).show();
 						}
 					});
 				}
@@ -239,7 +231,7 @@ public class MyActivity extends Activity implements ALInterface {
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				connectButton.setText("Disconnect");
+				connectButton.setText(getString(R.string.disconnect_text));
 			}
 		});
 
@@ -281,19 +273,21 @@ public class MyActivity extends Activity implements ALInterface {
 		NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
 				.setSmallIcon(R.drawable.nao)
 				.setContentTitle("NaoDroid")
-				.setContentText("connected to robot :" + ipAddress)
+				.setContentText(getString(R.string.connected_to) + ipAddress)
 				.setDeleteIntent(PendingIntent.getBroadcast(this,
 						requestCode, new Intent(ACTION_DISMISS_NOTIFICATION), PendingIntent.FLAG_CANCEL_CURRENT))
 				.setContentIntent(viewPendingIntent);
 
 
-		for (String name : behaviorList.keySet()) {
-			addAction(notificationBuilder, name);
-		}
+
 		Intent intent = new Intent(ACTION_STOP_BEHAVIOR);
 		PendingIntent behaviorIntent = PendingIntent.getBroadcast(this, requestCode, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 		notificationBuilder.addAction(R.drawable.stop, "stop behavior", behaviorIntent);
 		requestCode++;
+
+		for (String name : behaviorList.keySet()) {
+			addAction(notificationBuilder, name);
+		}
 
 		notificationManager.notify(notificationId, notificationBuilder.build());
 	}
@@ -323,8 +317,8 @@ public class MyActivity extends Activity implements ALInterface {
 	}
 
 	public void onConnectButton(View view) throws InterruptedException, CallError {
-		if (connectButton.getText().equals("Connect")) {
-			connectButton.setText("Connecting...");
+		if (connectButton.getText().equals(getString(R.string.connect))) {
+			connectButton.setText(getString(R.string.connecting));
 			ipText.setEnabled(false);
 			startServiceRoutine();
 		}
@@ -336,22 +330,28 @@ public class MyActivity extends Activity implements ALInterface {
 
 	public void onDisconnected() throws InterruptedException, CallError {
 
-		if (session.isConnected()) {
+		if (session.isConnected() && alSpeech != null) {
 			alSpeech.say(getString(R.string.disconnect_say));
 			session.close();
 		}
-		connectButton.setText("Connect");
+		connectButton.setText(getString(R.string.connect));
+
+		almotion = null;
+		alSpeech = null;
+		alaudioDevice = null;
+		alAutonomousLife = null;
+		alBehaviorManager = null;
 	}
 
 	@Override
 	public void onALModuleReady() {
-		writeLog("Session connected ");
+		writeLog("Service connected ");
 	}
 
 	@Override
 	public void onALModuleException(Exception e) {
 		Toast.makeText(context, "Cannot connect to " + ipAddress, Toast.LENGTH_SHORT).show();
-		writeError("error connection", e);
+		writeError("error connection service", e);
 	}
 
 

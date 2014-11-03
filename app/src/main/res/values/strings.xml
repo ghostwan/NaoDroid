@@ -2,12 +2,18 @@
 <resources>
 
     <string name="app_name">NaoDroid</string>
-    <string name="ip_text">Robot IP</string>
-    <string name="hello_wear">Hello wear!!</string>
-    <string name="action_settings">Settings</string>
-    <string name="title_activity_my_activity2">MyActivity2</string>
+    <string name="ip_text">IP du robot</string>
+    <string name="action_settings">Paramètres</string>
     <string name="disconnect_say">je me déconnecte</string>
     <string name="connect_say">je suis connecté avec Nao Droïde</string>
     <string name="no_connected_say">je ne suis pas connecté</string>
+    <string name="launching_behavior_say">je lance le behavior </string>
+    <string name="running_text">En cours</string>
+    <string name="cannot_connect_text">Ne pas peut pas se connecter à </string>
+    <string name="enter_robot_ip">Entrez l\'ip du robot ou son nom</string>
+    <string name="disconnect_text">Déconnexion</string>
+    <string name="connected_to">connexion au robot :</string>
+    <string name="connecting">En cour de connexion...</string>
+    <string name="connect">Connexion</string>
 
 </resources>

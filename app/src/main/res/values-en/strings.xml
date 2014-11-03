@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">NaoDroid</string>
+    <string name="ip_text">Robot IP</string>
+    <string name="action_settings">Settings</string>
+    <string name="disconnect_say">I was disconnect </string>
+    <string name="connect_say">I am connected with Nao Droid</string>
+    <string name="no_connected_say">I am not connected</string>
+    <string name="launching_behavior_say">je lance le behavior </string>
+    <string name="running_text">running</string>
+    <string name="cannot_connect_text">Cannot connect to </string>
+    <string name="enter_robot_ip">Please enter a robot ip or name</string>
+    <string name="disconnect_text">Disconnect</string>
+    <string name="connected_to">connection to :</string>
+    <string name="connecting">Connecting...</string>
+    <string name="connect">Connect</string>
+
+</resources>
