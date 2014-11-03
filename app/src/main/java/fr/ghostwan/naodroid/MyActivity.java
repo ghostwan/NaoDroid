@@ -262,7 +262,6 @@ public class MyActivity extends Activity implements ALInterface {
 				behaviorMap.put(name, name);
 			}
 		}
-
 		return behaviorMap;
 	}
 
