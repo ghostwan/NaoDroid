@@ -14,7 +14,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="@string/robot_ip_text"
-        android:text="10.0.206.110"
         android:id="@+id/robotip_edit"/>
     <Button
         android:layout_width="match_parent"
