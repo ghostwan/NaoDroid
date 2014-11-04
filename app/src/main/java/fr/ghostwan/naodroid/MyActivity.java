@@ -2,11 +2,9 @@ package fr.ghostwan.naodroid;
 
 import android.app.Activity;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.*;
 import android.graphics.Color;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
@@ -19,16 +17,14 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.*;
 import com.aldebaran.qimessaging.*;
 import com.aldebaran.qimessaging.helpers.ALInterface;
 import com.aldebaran.qimessaging.helpers.ALModule;
 import com.aldebaran.qimessaging.helpers.al.*;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.List;
@@ -43,7 +39,7 @@ public class MyActivity extends Activity implements ALInterface {
 	private static final String ACTION_RUN_BEHAVIOR = "fr.ghostwan.naodroid.ACTION_RUN_BEHAVIOR";
 	private static final String ACTION_DISMISS_NOTIFICATION = "fr.ghostwan.naodroid.ACTION_DISMISS_NOTIFICATION";
 	private static final String ACTION_STOP_BEHAVIOR = "fr.ghostwan.naodroid.ACTION_STOP_BEHAVIOR";
-	private EditText ipText;
+	private AutoCompleteTextView ipText;
 	private Context context;
 	private Button connectButton;
 	private String ipAddress;
@@ -61,6 +57,10 @@ public class MyActivity extends Activity implements ALInterface {
 	private ALAudioDevice alaudioDevice;
 	private NotificationManagerCompat notificationManager;
 	private ALMotion almotion;
+	private ArrayAdapter<String> ipTextAdapter;
+
+	private final static String SHARED_PREFERENCES_FILE_NAME = "remembered_xml";
+	private final static String FIELD_FLAG_STR = "remembered";
 
 
 	@Override
@@ -69,9 +69,11 @@ public class MyActivity extends Activity implements ALInterface {
 		requestCode = 0;
 		setContentView(R.layout.activity_my);
 		context = this;
-		ipText = (EditText) findViewById(R.id.robotip_edit);
+		ipText = (AutoCompleteTextView) findViewById(R.id.robotip_edit);
 		connectButton = (Button) findViewById(R.id.connect_button);
 		connectButton.setText(getString(R.string.connect));
+
+		initAutoCompleteTextView(FIELD_FLAG_STR, ipText);
 		logText = (TextView) findViewById(R.id.log_text);
 		logText.setMovementMethod(new ScrollingMovementMethod());
 		ALModule.alInterface = this;
@@ -135,6 +137,46 @@ public class MyActivity extends Activity implements ALInterface {
 		registerReceiver(broadcastReceiver, filter);
 	}
 
+	private void initAutoCompleteTextView(String field,AutoCompleteTextView auto) {
+		final String[] newArrays = new String[50];
+		SharedPreferences sp = getSharedPreferences(SHARED_PREFERENCES_FILE_NAME, 0);
+		String longhistory = sp.getString(field, "");
+		String[]  hisArrays = longhistory.split(",");
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+				android.R.layout.simple_dropdown_item_1line, hisArrays);
+		//save current history limit 5 line.
+		if(hisArrays.length > 5){
+			System.arraycopy(hisArrays, 0, newArrays, 0, 5);
+			adapter = new ArrayAdapter<String>(this,
+					android.R.layout.simple_dropdown_item_1line, newArrays);
+		}
+		auto.setAdapter(adapter);
+		auto.setDropDownHeight(300);
+		auto.setThreshold(1);
+		auto.setCompletionHint("Recently used IP history");
+
+		auto.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+			@Override
+			public void onFocusChange(View v, boolean hasFocus) {
+				AutoCompleteTextView view = (AutoCompleteTextView) v;
+				if (hasFocus) {
+					view.showDropDown();
+				}
+			}
+		});
+	}
+
+	private void saveSharedPreferences(String field,AutoCompleteTextView auto) {
+		String text = auto.getText().toString();
+		SharedPreferences sp = getSharedPreferences(SHARED_PREFERENCES_FILE_NAME, 0);
+		String longhistory = sp.getString(field, "");
+		if (!longhistory.contains(text + ",")) {
+			StringBuilder sb = new StringBuilder(longhistory);
+			sb.insert(0, text + ",");
+			sp.edit().putString(field, sb.toString()).commit();
+		}
+	}
+
 	@Override
 	protected void onDestroy() {
 		unregisterReceiver(broadcastReceiver);
@@ -172,7 +214,10 @@ public class MyActivity extends Activity implements ALInterface {
 			@Override
 			public void run() {
 				appendColoredText(logText, "ERROR: " + text, Color.RED);
-				Log.e(TAG, text, e);
+				if (e != null)
+					Log.e(TAG, text, e);
+				else
+					Log.e(TAG, text);
 			}
 		});
 	}
@@ -221,6 +266,22 @@ public class MyActivity extends Activity implements ALInterface {
 		routine.start();
 	}
 
+	public void setWifiTetheringEnabled(boolean isTurnToOn) {
+		WifiManager wifiManager = (WifiManager)getSystemService(Context.WIFI_SERVICE);
+		WifiApControl apControl = WifiApControl.getApControl(wifiManager);
+		if (apControl != null) {
+			wifiManager.setWifiEnabled(!isTurnToOn);
+			if (isTurnToOn)
+				wifiManager.setWifiEnabled(false);
+			apControl.setWifiApEnabled(apControl.getWifiApConfiguration(),	isTurnToOn);
+			if (!isTurnToOn)
+				wifiManager.setWifiEnabled(true);
+		}
+		else {
+			writeError("tethering not supported", null);
+		}
+	}
+
 	private void connectServices() throws InterruptedException, CallError {
 		alSpeech = new ALTextToSpeech(session);
 		alSpeech.setAsynchronous(true);
@@ -236,6 +297,7 @@ public class MyActivity extends Activity implements ALInterface {
 		});
 
 		alSpeech.say(getString(R.string.connect_say));
+		saveSharedPreferences(FIELD_FLAG_STR, ipText);
 		behaviors = getBehaviors();
 		currentVolume = alaudioDevice.getOutputVolume();
 		createNotification(behaviors);
@@ -310,8 +372,15 @@ public class MyActivity extends Activity implements ALInterface {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int id = item.getItemId();
-		if (id == R.id.action_settings) {
-			return true;
+		if (id == R.id.action_hotspot) {
+			if (item.getTitle().equals(getString(R.string.action_enable_hotspot))) {
+				item.setTitle(R.string.action_disable_hotspot);
+				setWifiTetheringEnabled(true);
+			}
+			else  {
+				item.setTitle(R.string.action_enable_hotspot);
+				setWifiTetheringEnabled(false);
+			}
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -330,7 +399,7 @@ public class MyActivity extends Activity implements ALInterface {
 
 	public void onDisconnected() throws InterruptedException, CallError {
 
-		if (session.isConnected() && alSpeech != null) {
+		if (session != null && session.isConnected() && alSpeech != null) {
 			alSpeech.say(getString(R.string.disconnect_say));
 			session.close();
 		}
@@ -359,7 +428,7 @@ public class MyActivity extends Activity implements ALInterface {
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		try {
 
-			if (session.isConnected()) {
+			if (session != null && session.isConnected()) {
 				if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
 					if ((currentVolume - 5) >= 0) {
 						currentVolume -= 5;

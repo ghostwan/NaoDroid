@@ -4,6 +4,8 @@
     <string name="app_name">NaoDroid</string>
     <string name="ip_text">Robot IP</string>
     <string name="action_settings">Settings</string>
+    <string name="action_enable_hotspot">Enable Hotspot</string>
+    <string name="action_disable_hotspot">Disable Hotspot</string>
     <string name="disconnect_say">I was disconnect </string>
     <string name="connect_say">I am connected with Nao Droid</string>
     <string name="no_connected_say">I am not connected</string>
@@ -15,5 +17,6 @@
     <string name="connected_to">connection to :</string>
     <string name="connecting">Connecting...</string>
     <string name="connect">Connect</string>
+    <string name="robot_ip_text">Robot IP or name</string>
 
 </resources>

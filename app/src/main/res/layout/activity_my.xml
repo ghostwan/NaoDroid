@@ -10,15 +10,15 @@
     tools:context=".MyActivity">
 
 
-    <EditText
+    <AutoCompleteTextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Robot IP or name"
+        android:hint="@string/robot_ip_text"
         android:text="10.0.206.110"
         android:id="@+id/robotip_edit"/>
     <Button
         android:layout_width="match_parent"
-        android:text="Connect"
+        android:text="@string/connect"
         android:onClick="onConnectButton"
         android:id="@+id/connect_button"
         android:layout_height="wrap_content"/>
