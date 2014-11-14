@@ -1,10 +1,12 @@
 package fr.ghostwan.naodroid;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.*;
 import android.graphics.Color;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
@@ -63,11 +65,36 @@ public class MyActivity extends Activity implements ALInterface {
 	private final static String FIELD_FLAG_STR = "remembered";
 
 
+	@TargetApi(Build.VERSION_CODES.L)
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		requestCode = 0;
 		setContentView(R.layout.activity_my);
+
+		Toolbar toolbar = (Toolbar) findViewById(R.id.my_awesome_toolbar);
+		// Set an OnMenuItemClickListener to handle menu item clicks
+		toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+			@Override
+			public boolean onMenuItemClick(MenuItem item) {
+				int id = item.getItemId();
+				if (id == R.id.action_hotspot) {
+					if (item.getTitle().equals(getString(R.string.action_enable_hotspot))) {
+						item.setTitle(R.string.action_disable_hotspot);
+						setWifiTetheringEnabled(true);
+					}
+					else  {
+						item.setTitle(R.string.action_enable_hotspot);
+						setWifiTetheringEnabled(false);
+					}
+				}
+				return true;
+			}
+		});
+
+		// Inflate a menu to be displayed in the toolbar
+		toolbar.inflateMenu(R.menu.my);
+
 		context = this;
 		ipText = (AutoCompleteTextView) findViewById(R.id.robotip_edit);
 		connectButton = (Button) findViewById(R.id.connect_button);
@@ -458,4 +485,7 @@ public class MyActivity extends Activity implements ALInterface {
 	}
 
 
+	public void onTestButton(View view) {
+		startActivity(new Intent(this, TestActivity.class));
+	}
 }

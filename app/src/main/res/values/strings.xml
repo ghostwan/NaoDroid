@@ -18,5 +18,7 @@
     <string name="connecting">En cour de connexion...</string>
     <string name="connect">Connexion</string>
     <string name="robot_ip_text">ip ou non du robot</string>
+    <string name="title_activity_test">TestActivity</string>
+    <string name="hello_world">Hello world!</string>
 
 </resources>

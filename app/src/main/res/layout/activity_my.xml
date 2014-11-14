@@ -9,6 +9,12 @@
     android:orientation="vertical"
     tools:context=".MyActivity">
 
+    <android.widget.Toolbar
+        android:id="@+id/my_awesome_toolbar"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:minHeight="?attr/actionBarSize"
+        android:background="?attr/colorPrimary" />
 
     <AutoCompleteTextView
         android:layout_width="match_parent"
@@ -21,6 +27,11 @@
         android:onClick="onConnectButton"
         android:id="@+id/connect_button"
         android:layout_height="wrap_content"/>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Test"
+        android:onClick="onTestButton"/>
     <TextView
         android:text="Log :"
         android:layout_width="match_parent"
